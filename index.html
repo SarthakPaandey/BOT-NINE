@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BOT 9</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "Poppins", sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        color: #333;
+        background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+        background-size: 400% 400%;
+        animation: gradientBG 15s ease infinite;
+        min-height: 100vh;
+      }
+      @keyframes gradientBG {
+        0% {
+          background-position: 0% 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
+        100% {
+          background-position: 0% 50%;
+        }
+      }
+      h1 {
+        text-align: center;
+        color: #fff;
+        font-weight: 600;
+        margin-bottom: 30px;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      #chat-container {
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 12px;
+        height: 500px;
+        overflow-y: auto;
+        padding: 20px;
+        background-color: rgba(255, 255, 255, 0.9);
+        margin-bottom: 20px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+      #user-input {
+        width: calc(100% - 22px);
+        padding: 15px;
+        margin: 10px 0;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        font-size: 16px;
+        transition: border-color 0.3s ease;
+        background-color: rgba(255, 255, 255, 0.9);
+      }
+      #user-input:focus {
+        outline: none;
+        border-color: #fff;
+      }
+      .message {
+        margin: 15px 0;
+        padding: 12px 15px;
+        border-radius: 18px;
+        line-height: 1.6;
+        max-width: 80%;
+        position: relative;
+        animation: fadeIn 0.5s ease-out;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .message.user {
+        background-color: rgba(52, 152, 219, 0.9);
+        color: white;
+        align-self: flex-end;
+        margin-left: auto;
+      }
+      .message.bot {
+        background-color: rgba(236, 240, 241, 0.9);
+        color: #34495e;
+        align-self: flex-start;
+      }
+      .message p {
+        margin: 0;
+      }
+      footer {
+        text-align: center;
+        margin-top: 30px;
+        font-size: 14px;
+        color: #fff;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+      }
+      #chat-header {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+      }
+      #logo {
+        width: 50px;
+        height: 50px;
+        margin-right: 15px;
+        background-color: white;
+        border-radius: 50%;
+        padding: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="chat-header">
+      <img
+        id="logo"
+        src="Mandala Royal Resort Logo Minimalist.png"
+        alt="Hotel Logo"
+      />
+      <h1>BOT 9</h1>
+    </div>
+    <div id="chat-container"></div>
+    <input
+      type="text"
+      id="user-input"
+      placeholder="Ask about our rooms, amenities, or make a booking..."
+      autofocus
+    />
+    <footer>
+      &copy; 2024 Luxury Hotel Booking Assistant. All rights reserved.
+    </footer>
+    <script>
+      const chatContainer = document.getElementById("chat-container");
+      const userInput = document.getElementById("user-input");
+      const userId = "user" + Math.floor(Math.random() * 1000000);
+
+      // Initial greeting
+      setTimeout(() => {
+        appendMessage(
+          "Bot",
+          "Welcome to BOT 9, your personal hotel booking assistant. How may I assist you today?",
+          "bot"
+        );
+      }, 1000);
+
+      userInput.addEventListener("keypress", function (event) {
+        if (event.key === "Enter") {
+          const message = userInput.value.trim();
+          if (message === "") return; // Avoid sending empty messages
+          appendMessage("You", message, "user");
+          userInput.value = "";
+
+          fetch("/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message, userId }),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.message) {
+                appendMessage("Bot", data.message, "bot");
+              } else {
+                appendMessage(
+                  "Bot",
+                  "I apologize, but I'm having trouble processing your request. Could you please try again?",
+                  "bot"
+                );
+              }
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+              appendMessage(
+                "Bot",
+                "I'm sorry, but it seems we're experiencing technical difficulties. Please try again later.",
+                "bot"
+              );
+            });
+        }
+      });
+
+      function appendMessage(sender, message, type) {
+        const messageElement = document.createElement("div");
+        messageElement.className = `message ${type}`;
+        messageElement.innerHTML = `<p>${message}</p>`;
+        chatContainer.appendChild(messageElement);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      }
+    </script>
+  </body>
+</html>
