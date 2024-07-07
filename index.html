@@ -37,6 +37,23 @@
         font-weight: 600;
         margin-bottom: 30px;
         text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        background: linear-gradient(-45deg, #23a6d5, #00ff00, #8f0596, #ffff00);
+        background-size: 400% 400%;
+        animation: gradientText 15s ease infinite;
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      @keyframes gradientText {
+        0% {
+          background-position: 0% 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
+        100% {
+          background-position: 0% 50%;
+        }
       }
       #chat-container {
         border: 1px solid rgba(255, 255, 255, 0.2);
@@ -113,19 +130,24 @@
         width: 50px;
         height: 50px;
         margin-right: 15px;
-        background-color: white;
+        background-color: rgb(219, 183, 21);
         border-radius: 50%;
-        padding: 5px;
+        padding: 1px;
+        animation: spin 2s linear infinite;
+      }
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
       }
     </style>
   </head>
   <body>
     <div id="chat-header">
-      <img
-        id="logo"
-        src="Mandala Royal Resort Logo Minimalist.png"
-        alt="Hotel Logo"
-      />
+      <img id="logo" src="Royal Resort Logo Minimalist.png" alt="Hotel Logo" />
       <h1>BOT 9</h1>
     </div>
     <div id="chat-container"></div>
@@ -135,9 +157,7 @@
       placeholder="Ask about our rooms, amenities, or make a booking..."
       autofocus
     />
-    <footer>
-      &copy; 2024 Luxury Hotel Booking Assistant. All rights reserved.
-    </footer>
+    <footer>BOT 9, Booking Assistant.</footer>
     <script>
       const chatContainer = document.getElementById("chat-container");
       const userInput = document.getElementById("user-input");

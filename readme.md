@@ -10,7 +10,7 @@ This project implements a RESTful API using Express.js for a hotel booking chatb
 2. Install dependencies:
    npm install
 3. Start the server:
-   node server.js
+   node app.js
 4. Create a `.env` file in the project root and add your OpenAI API key:
    OPENAI_API_KEY=your_openai_api_key_here
 
