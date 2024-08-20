@@ -12,7 +12,15 @@ app.use(express.json());
 app.use(express.static("."));
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-
+let messages = [
+  {
+    role: "system",
+    content: `You are a helpful hotel booking assistant. Use the following room options when asked:Ask for the following information before booking: Full Name, Email, Room ID, Number of Nights. Confirm all details before making a booking.
+          then when you confirm booking give all final details to user with heading "confirm your booking" after confirming call the "bookroom" function using function calling
+          
+          `,
+  },
+];
 // Set up SQLite database
 const sequelize = new Sequelize({
   dialect: "sqlite",
@@ -34,6 +42,7 @@ sequelize.sync().catch((error) => {
 // Function to get room options from the API
 async function getRoomOptions() {
   try {
+    console.log("Fetching room options...");
     const response = await axios.get("https://bot9assignement.deno.dev/rooms");
     return response.data
       .map((room) => `${room.name} (ID: ${room.id}) - Rs.${room.price}/night`)
@@ -53,6 +62,8 @@ async function bookRoom(roomId, fullName, email, nights) {
       email,
       nights,
     });
+
+    console.log("Booking successful:", response.data);
 
     return response.data;
   } catch (error) {
@@ -113,23 +124,23 @@ app.post("/chat", async (req, res) => {
 
     // Get room options
     const roomOptions = await getRoomOptions();
-
+    let mes = {
+      role: "user",
+      content: message,
+    };
+    messages.push(mes);
     // Generate chatbot response
     const completion = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
-      messages: [
-        {
-          role: "system",
-          content: `You are a helpful hotel booking assistant. Use the following room options when asked:\n${roomOptions}\n\nAsk for the following information before booking: Full Name, Email, Room ID, Number of Nights. Confirm all details before making a booking.`,
-        },
-        {
-          role: "user",
-          content: conversationHistory + `\nHuman: ${message}\nAI:`,
-        },
-      ],
+      messages: messages,
     });
 
     const botResponse = completion.choices[0].message.content;
+    mes = {
+      role: "assistant",
+      content: botResponse,
+    };
+    messages.push(mes);
 
     // Store bot response in conversation history
     await Conversation.update(
@@ -140,12 +151,13 @@ app.post("/chat", async (req, res) => {
     );
 
     // Check if all booking details are provided
-    if (botResponse.includes("confirm your booking")) {
+    if (botResponse.toLocaleLowerCase().includes("confirm your booking")) {
       const bookingDetails = botResponse.match(
         /Full Name: (.+), Email: (.+), Room ID: (\d+), Nights: (\d+)/
       );
       if (bookingDetails) {
-        const [, fullName, email, roomId, nights] = bookingDetails;
+        const [fullName, email, roomId, nights] = bookingDetails;
+
         try {
           const booking = await bookRoom(
             parseInt(roomId),
@@ -153,6 +165,7 @@ app.post("/chat", async (req, res) => {
             email,
             parseInt(nights)
           );
+          console.log("Booking successful:", booking);
 
           // Use the booking ID from the API response
           let confirmationResponse = `Great news! Your booking is confirmed. Booking ID: ${booking.bookingId}. Room: ${booking.roomName}. Total Price: $${booking.totalPrice}. A confirmation email will be sent to ${email}.`;
